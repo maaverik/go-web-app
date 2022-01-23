@@ -1,4 +1,4 @@
-module github.com/maaverik/go-web-app
+module go-web-app
 
 go 1.17
 
