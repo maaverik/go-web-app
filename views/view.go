@@ -4,10 +4,11 @@ import "html/template"
 
 type View struct {
 	Template *template.Template
+	Layout   string
 }
 
-func CreateView(files ...string) *View {
-	files = append(files, "views/layouts/footer.gohtml")
+func CreateView(layout string, files ...string) *View {
+	files = append(files, "views/layouts/footer.gohtml", "views/layouts/bootstrap.gohtml")
 	t, err := template.ParseFiles(files...)
 
 	if err != nil {
@@ -16,5 +17,6 @@ func CreateView(files ...string) *View {
 
 	return &View{
 		Template: t,
+		Layout:   layout,
 	}
 }
