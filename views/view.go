@@ -31,7 +31,7 @@ func getLayoutFiles() []string {
 }
 
 // parses all layout templates and extra templates passed along and returns a View object
-func CreateView(layout string, files ...string) *View {
+func New(layout string, files ...string) *View {
 	files = append(files, getLayoutFiles()...)
 	t, err := template.ParseFiles(files...)
 
