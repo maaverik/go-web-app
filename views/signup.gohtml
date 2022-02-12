@@ -1,4 +1,18 @@
 {{define "content"}}
+<div class="row">
+  <div class="col-md-4 col-md-offset-4  mx-auto">
+    <div class="card border-secondary  mb-3">
+        <h3 class="card-header">Sign Up</h3>
+      <div class="card-body">
+        {{template "signupForm"}}
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+
+{{define "signupForm"}}
     <form>
         <div class="mb-3">
             <label for="email" class="form-label">Email address</label>
