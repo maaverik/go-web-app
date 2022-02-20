@@ -3,26 +3,10 @@ package main
 import (
 	"fmt"
 	"go-web-app/controllers"
-	"go-web-app/views"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
-
-var (
-	homeView    *views.View
-	contactView *views.View
-)
-
-func home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	must(homeView.Render(w, nil))
-}
-
-func contact(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	must(contactView.Render(w, nil))
-}
 
 func pageNotFound(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>404: page not found</h1>")
@@ -36,15 +20,14 @@ func must(err error) {
 
 // the name main is essential for this function and package to run
 func main() {
-	homeView = views.New("bootstrap", "views/home.gohtml")
-	contactView = views.New("bootstrap", "views/contact.gohtml")
-	users := controllers.NewUsers()
+	usersController := controllers.NewUsers()
+	staticController := controllers.NewStatic()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", home).Methods("GET")
-	r.HandleFunc("/contact", contact).Methods("GET")
-	r.HandleFunc("/signup", users.New).Methods("GET")
-	r.HandleFunc("/signup", users.Create).Methods("POST")
+	r.Handle("/", staticController.HomeView).Methods("GET")
+	r.Handle("/contact", staticController.ContactView).Methods("GET")
+	r.HandleFunc("/signup", usersController.New).Methods("GET")
+	r.HandleFunc("/signup", usersController.Create).Methods("POST")
 	r.NotFoundHandler = http.HandlerFunc(pageNotFound)
 
 	http.ListenAndServe(":3000", r)

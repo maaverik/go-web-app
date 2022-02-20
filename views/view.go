@@ -18,6 +18,7 @@ type View struct {
 
 // execute the Template with extra data passed along to render the view to the writer
 func (v *View) Render(w http.ResponseWriter, data interface{}) error {
+	w.Header().Set("Content-Type", "text/html")
 	return v.Template.ExecuteTemplate(w, v.Layout, data)
 }
 
@@ -42,5 +43,11 @@ func New(layout string, files ...string) *View {
 	return &View{
 		Template: t,
 		Layout:   layout,
+	}
+}
+
+func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := v.Render(w, nil); err != nil {
+		panic(err)
 	}
 }
