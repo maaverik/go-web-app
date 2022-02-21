@@ -22,6 +22,7 @@ func must(err error) {
 func main() {
 	usersController := controllers.NewUsers()
 	staticController := controllers.NewStatic()
+	galleriesController := controllers.NewGalleries()
 
 	r := mux.NewRouter()
 	r.Handle("/", staticController.HomeView).Methods("GET")
@@ -29,6 +30,7 @@ func main() {
 	r.Handle("/faq", staticController.FAQView).Methods("GET")
 	r.HandleFunc("/signup", usersController.New).Methods("GET")
 	r.HandleFunc("/signup", usersController.Create).Methods("POST")
+	r.HandleFunc("/galleries/new", galleriesController.New).Methods("GET")
 	r.NotFoundHandler = http.HandlerFunc(pageNotFound)
 
 	http.ListenAndServe(":3000", r)

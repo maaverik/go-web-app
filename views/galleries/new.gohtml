@@ -1,0 +1,24 @@
+{{define "content"}}
+<div class="row">
+  <div class="col-md-4 col-md-offset-4  mx-auto">
+    <div class="card border-secondary  mb-3">
+        <h3 class="card-header">Sign Up</h3>
+      <div class="card-body">
+        {{template "signupForm"}}
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+
+{{define "signupForm"}}
+    <form action="/galleries" method="POST">
+        <div class="mb-3">
+            <label for="gallery-name" class="form-label">Gallery Name</label>
+            <input name="gallery-name" type="text" class="form-control" id="gallery-name">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+{{end}}
