@@ -3,9 +3,18 @@ package main
 import (
 	"fmt"
 	"go-web-app/controllers"
+	"go-web-app/models"
 	"net/http"
 
 	"github.com/gorilla/mux"
+)
+
+// DB connection info
+const (
+	host   = "localhost"
+	port   = 5432
+	user   = "nithin"
+	dbname = "unsploosh"
 )
 
 func pageNotFound(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +32,16 @@ func main() {
 	usersController := controllers.NewUsers()
 	staticController := controllers.NewStatic()
 	galleriesController := controllers.NewGalleries()
+
+	// connect to DB
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
+		host, port, user, dbname)
+	uService, err := models.NewUserService(psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer uService.Close()
+	uService.AutoMigrate()
 
 	r := mux.NewRouter()
 	r.Handle("/", staticController.HomeView).Methods("GET")

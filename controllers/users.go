@@ -12,6 +12,7 @@ type Users struct {
 
 type SignupForm struct {
 	// adding struct tags to allow the `schema` package to get key names to decode from form data
+	Name     string `schema:"name"`
 	Email    string `schema:"email"`
 	Password string `schema:"password"`
 }
@@ -39,6 +40,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err := ParseForm(r, &form); err != nil {
 		panic(err)
 	}
+	fmt.Fprintln(w, form.Name)
 	fmt.Fprintln(w, form.Email)
 	fmt.Fprintln(w, form.Password)
 }
