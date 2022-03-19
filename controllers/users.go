@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"fmt"
+	"go-web-app/models"
 	"go-web-app/views"
 	"net/http"
 )
 
 type Users struct {
-	View *views.View
+	View     *views.View
+	uService *models.UserService
 }
 
 type SignupForm struct {
@@ -17,9 +19,10 @@ type SignupForm struct {
 	Password string `schema:"password"`
 }
 
-func NewUsers() *Users {
+func NewUsers(uService *models.UserService) *Users {
 	return &Users{
-		View: views.New("bootstrap", "views/users/new.gohtml"),
+		View:     views.New("bootstrap", "views/users/new.gohtml"),
+		uService: uService,
 	}
 }
 
@@ -39,6 +42,15 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	form := SignupForm{}
 	if err := ParseForm(r, &form); err != nil {
 		panic(err)
+	}
+	user := models.User{
+		Name:  form.Name,
+		Email: form.Email,
+	}
+	err := u.uService.Create(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	fmt.Fprintln(w, form.Name)
 	fmt.Fprintln(w, form.Email)

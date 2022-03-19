@@ -10,7 +10,7 @@ import (
 type User struct {
 	gorm.Model // composition
 	Name       string
-	Email      string `gorm:"not null; unique index"`
+	Email      string `gorm:"not null; unique_index"`
 }
 
 // UserService is an abstraction around the DB connector that we use

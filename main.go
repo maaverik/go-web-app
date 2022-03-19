@@ -29,10 +29,6 @@ func must(err error) {
 
 // the name main is essential for this function and package to run
 func main() {
-	usersController := controllers.NewUsers()
-	staticController := controllers.NewStatic()
-	galleriesController := controllers.NewGalleries()
-
 	// connect to DB
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
 		host, port, user, dbname)
@@ -42,6 +38,10 @@ func main() {
 	}
 	defer uService.Close()
 	uService.AutoMigrate()
+
+	usersController := controllers.NewUsers(uService)
+	staticController := controllers.NewStatic()
+	galleriesController := controllers.NewGalleries()
 
 	r := mux.NewRouter()
 	r.Handle("/", staticController.HomeView).Methods("GET")
