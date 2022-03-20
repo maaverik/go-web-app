@@ -5,12 +5,15 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	gorm.Model // composition
-	Name       string
-	Email      string `gorm:"not null; unique_index"`
+	gorm.Model   // composition
+	Name         string
+	Email        string `gorm:"not null; unique_index"`
+	Password     string `gorm:"-"` // don't store in DB
+	PasswordHash string `gorm:"not null"`
 }
 
 // UserService is an abstraction around the DB connector that we use
@@ -86,6 +89,17 @@ func (service *UserService) ResetDB() error {
 // Create will create a user entry in the DB and update
 // the provided user object with ID, CreatedAt, UpdatedAt fields
 func (service *UserService) Create(user *User) error {
+	// cost determines the effort to generate a hash and DefaultCost is stored in
+	// the library itself and is increased when CPUs get better
+	hashedBytes, err := bcrypt.GenerateFromPassword(
+		[]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	// not all byte slices can be converted to string because of invalid characters,
+	// but here it's fine
+	user.Password = "" // not required anymore
 	return service.db.Create(user).Error
 }
 
