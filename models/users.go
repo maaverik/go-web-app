@@ -25,7 +25,8 @@ var (
 	// ErrNotFound signifies a resource not present in the DB
 	ErrNotFound = errors.New("resource not found")
 	// ErrInvalidId signifies that an invalid ID was provided to a method like delete
-	ErrInvalidId = errors.New("ID provided was invalid")
+	ErrInvalidId       = errors.New("ID provided was invalid")
+	userPasswordPepper = "dummy-pepper" // application-specific pepper added to password to hash
 )
 
 func NewUserService(connectionInfo string) (*UserService, error) {
@@ -91,12 +92,13 @@ func (service *UserService) ResetDB() error {
 func (service *UserService) Create(user *User) error {
 	// cost determines the effort to generate a hash and DefaultCost is stored in
 	// the library itself and is increased when CPUs get better
+	pwBytes := []byte(user.Password + userPasswordPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(
-		[]byte(user.Password), bcrypt.DefaultCost)
+		pwBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	user.PasswordHash = string(hashedBytes)
+	user.PasswordHash = string(hashedBytes) // already salted by bcrypt
 	// not all byte slices can be converted to string because of invalid characters,
 	// but here it's fine
 	user.Password = "" // not required anymore

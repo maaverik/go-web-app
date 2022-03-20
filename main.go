@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 	defer uService.Close()
-	// uService.ResetDB()
+	// uService.ResetDB()	// uncomment to reset the DB
 	uService.AutoMigrate()
 
 	usersController := controllers.NewUsers(uService)
@@ -48,8 +48,13 @@ func main() {
 	r.Handle("/", staticController.HomeView).Methods("GET")
 	r.Handle("/contact", staticController.ContactView).Methods("GET")
 	r.Handle("/faq", staticController.FAQView).Methods("GET")
+
 	r.HandleFunc("/signup", usersController.New).Methods("GET")
 	r.HandleFunc("/signup", usersController.Create).Methods("POST")
+
+	r.Handle("/login", usersController.LoginView).Methods("GET")
+	r.HandleFunc("/login", usersController.Login).Methods("POST")
+
 	r.HandleFunc("/galleries/new", galleriesController.New).Methods("GET")
 	r.NotFoundHandler = http.HandlerFunc(pageNotFound)
 

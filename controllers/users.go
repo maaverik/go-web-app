@@ -8,8 +8,9 @@ import (
 )
 
 type Users struct {
-	View     *views.View
-	uService *models.UserService
+	NewView   *views.View
+	LoginView *views.View
+	uService  *models.UserService
 }
 
 type SignupForm struct {
@@ -19,10 +20,16 @@ type SignupForm struct {
 	Password string `schema:"password"`
 }
 
+type LoginForm struct {
+	Email    string `schema:"email"`
+	Password string `schema:"password"`
+}
+
 func NewUsers(uService *models.UserService) *Users {
 	return &Users{
-		View:     views.New("bootstrap", "views/users/new.gohtml"),
-		uService: uService,
+		NewView:   views.New("bootstrap", "views/users/new.gohtml"),
+		LoginView: views.New("bootstrap", "views/users/login.gohtml"),
+		uService:  uService,
 	}
 }
 
@@ -30,7 +37,7 @@ func NewUsers(uService *models.UserService) *Users {
 
 // GET /signup
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	if err := u.View.Render(w, nil); err != nil {
+	if err := u.NewView.Render(w, nil); err != nil {
 		panic(err)
 	}
 }
@@ -54,6 +61,15 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintln(w, form.Name)
-	fmt.Fprintln(w, form.Email)
-	fmt.Fprintln(w, form.Password)
+}
+
+// Login takes info from login form and creates a session for a user
+
+// POST /login
+func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
+	form := LoginForm{}
+	if err := ParseForm(r, &form); err != nil {
+		panic(err)
+	}
+	// TODO login with UserService
 }
