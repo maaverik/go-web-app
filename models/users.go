@@ -25,7 +25,9 @@ var (
 	// ErrNotFound signifies a resource not present in the DB
 	ErrNotFound = errors.New("resource not found")
 	// ErrInvalidId signifies that an invalid ID was provided to a method like delete
-	ErrInvalidId       = errors.New("ID provided was invalid")
+	ErrInvalidId = errors.New("ID provided was invalid")
+	// ErrInvalidPassword signifies that a wrong password was entered during authentication
+	ErrInvalidPassword = errors.New("incorrect password provided")
 	userPasswordPepper = "dummy-pepper" // application-specific pepper added to password to hash
 )
 
@@ -121,4 +123,24 @@ func (service *UserService) Delete(id uint) error {
 // Automigrate will automatically migrate the user table
 func (service *UserService) AutoMigrate() error {
 	return service.db.AutoMigrate(&User{}).Error
+}
+
+func (service *UserService) Authenticate(email, password string) (*User, error) {
+	user, err := service.ByEmail(email)
+	if err != nil {
+		// if user is not found, ErrNotFound is returned
+		return nil, err
+	}
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.PasswordHash),
+		[]byte(password+userPasswordPepper),
+	)
+	switch err {
+	case nil:
+		return user, nil
+	case bcrypt.ErrMismatchedHashAndPassword:
+		return nil, ErrInvalidPassword
+	default: // something unexpected happened
+		return nil, err
+	}
 }
