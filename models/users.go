@@ -131,6 +131,7 @@ func (service *UserService) Authenticate(email, password string) (*User, error) 
 		// if user is not found, ErrNotFound is returned
 		return nil, err
 	}
+	// use this instead of comparing directly since bcrypt adds a salt automatically while generating hash
 	err = bcrypt.CompareHashAndPassword(
 		[]byte(user.PasswordHash),
 		[]byte(password+userPasswordPepper),
