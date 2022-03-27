@@ -72,14 +72,34 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	user, err := u.uService.Authenticate(form.Email, form.Password)
+
+	if err == nil {
+		cookie := http.Cookie{
+			Name:  "email",
+			Value: user.Email,
+		}
+		// cookie must be set in header before anything is written to ResponseWriter
+		http.SetCookie(w, &cookie)
+		fmt.Fprintln(w, user)
+		u.CookieTest(w, r)
+		return
+	}
+
 	switch err {
 	case models.ErrNotFound:
 		fmt.Fprintln(w, "Invalid email")
 	case models.ErrInvalidPassword:
 		fmt.Fprintln(w, "Invalid password")
-	case nil:
-		fmt.Fprintln(w, user)
 	default:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintln(w, "Email: ", cookie.Value)
 }
