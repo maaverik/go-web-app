@@ -3,22 +3,30 @@ package models
 import (
 	"errors"
 
+	"go-web-app/hash"
+	"go-web-app/rand"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"golang.org/x/crypto/bcrypt"
 )
 
+const hmacSecret = "random-secret"
+
 type User struct {
-	gorm.Model   // composition
-	Name         string
-	Email        string `gorm:"not null; unique_index"`
-	Password     string `gorm:"-"` // don't store in DB
-	PasswordHash string `gorm:"not null"`
+	gorm.Model    // composition
+	Name          string
+	Email         string `gorm:"not null; unique_index"`
+	Password      string `gorm:"-"` // don't store in DB
+	PasswordHash  string `gorm:"not null"`
+	RememberToken string `gorm:"-"` // don't store in DB
+	RememberHash  string `gorm:"not null; unique_index"`
 }
 
 // UserService is an abstraction around the DB connector that we use
 type UserService struct {
-	db *gorm.DB
+	db   *gorm.DB
+	hmac hash.HMAC
 }
 
 var (
@@ -37,8 +45,10 @@ func NewUserService(connectionInfo string) (*UserService, error) {
 		return nil, err
 	}
 	db.LogMode(true)
+	hmac := hash.NewHMAC(hmacSecret)
 	return &UserService{
 		db,
+		hmac,
 	}, nil
 }
 
@@ -80,6 +90,18 @@ func (service *UserService) ByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
+// ByRememberToken is used to look up a user record with the given token
+func (service *UserService) ByRemember(token string) (*User, error) {
+	var user User
+	rememberHash := service.hmac.Hash(token)
+	// gorm uses snake case for fields, so we use remember_hash
+	err := first(service.db.Where("remember_hash = ?", rememberHash), &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 // ResetDB drops and recreates the user table to make testing easier
 func (service *UserService) ResetDB() error {
 	err := service.db.DropTableIfExists(&User{}).Error
@@ -104,10 +126,23 @@ func (service *UserService) Create(user *User) error {
 	// not all byte slices can be converted to string because of invalid characters,
 	// but here it's fine
 	user.Password = "" // not required anymore
+
+	if user.RememberToken == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.RememberToken = token
+	}
+	user.RememberHash = service.hmac.Hash(user.RememberToken)
+
 	return service.db.Create(user).Error
 }
 
 func (service *UserService) Update(user *User) error {
+	if user.RememberToken != "" {
+		user.RememberHash = service.hmac.Hash(user.RememberToken)
+	}
 	return service.db.Save(user).Error
 }
 

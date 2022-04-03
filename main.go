@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 	defer uService.Close()
-	// uService.ResetDB()	// uncomment to reset the DB
+	// uService.ResetDB() // uncomment to reset the DB
 	uService.AutoMigrate()
 
 	usersController := controllers.NewUsers(uService)
